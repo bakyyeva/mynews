@@ -1,7 +1,7 @@
 
 ## My News
 
-bash
+```bash
 git clone https://github.com/bakyyeva/mynews.git
 cd news
 composer install
