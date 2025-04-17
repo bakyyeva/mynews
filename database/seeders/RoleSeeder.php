@@ -30,13 +30,5 @@ class RoleSeeder extends Seeder
             Role::create($role);
         }
 
-        $admin = User::query()
-            ->where('username', 'admin')
-            ->first();
-        $roleAdmin = Role::query()
-            ->where('name', 'admin')
-            ->first();
-
-        $admin->syncRoles($roleAdmin);
     }
 }

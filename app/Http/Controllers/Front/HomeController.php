@@ -1,47 +1,76 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Front;
 
+use App\Http\Controllers\Controller;
 use App\Models\News;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
+use Illuminate\Http\Request;
 
-class NewsController extends Controller
+class HomeController extends Controller
 {
     public function index()
     {
-        $authUser = session()->get('user');
+        $news = News::query()
+            ->orderBy('created_at', 'DESC')
+            ->paginate(4);
 
-        $adminRole = Role::query()
-            ->where('name', 'admin')
-            ->firstOrFail();
-        if($authUser->role_id == $adminRole->id)
-        {
-            $news = News::all();
-        }else{
-            $news = News::query()
-            ->where('author_id', $authUser->id)
-            ->get();
-        }
-        return view('admin.news.list', compact('news'));
+        $news->withPath(route('news.paginate'));
+
+        return view('front.index', compact('news'));
     }
 
-    public function create()
+    public function paginateNews(Request $request)
     {
-        $editorRole = Role::query()
-            ->where('name', 'editor')
-            ->firstOrFail();
+        $news = News::query()
+            ->orderBy('created_at', 'DESC')
+            ->paginate(4);
 
-        $authors = User::query()
-            ->where('role_id', $editorRole->id)
-            ->get();
+        $news->withPath(route('news.paginate'));
 
-        return view('admin.news.create-update', compact('authors'));
+        $view = view('layouts.sections.front.partials_newlist', ['news' => $news])->render();
+
+        return response()->json([
+            'html' => $view,
+            'pagination' => $news->links('pagination::bootstrap-4')->toHtml()
+        ])->setStatusCode(200);
     }
 
-    public function store(Request $request)
+    public function newsDetail(Request $request)
+    {
+        $new = News::query()
+            ->with('author')
+            ->where('id', $request->id)
+            ->firstOrFail();
+
+        return view('front.news-detail', compact('new'));
+    }
+
+    public function newsList(Request $request)
+    {
+        $news = News::query()
+            ->with('author')
+            ->where('author_id', $request->id)
+            ->get();
+
+        return view('front.news-list', compact('news'));
+    }
+
+    public function newsCreate()
+    {
+        return view('front.news-create-update');
+    }
+
+    public function newsEdit(Request $request)
+    {
+        $new = News::query()
+            ->where('id', $request->id)
+            ->firstOrFail();
+
+        return view('front.news-create-update', compact('new'));
+    }
+
+    public function newsStore(Request $request)
     {
         $data = $request->except('_token');
 
@@ -68,10 +97,7 @@ class NewsController extends Controller
             $data["image"] = $publicPath . "/" . $fileName;
         }
 
-        if(is_null($request->author_id))
-        {
-            $data['author_id'] = session('user.id');
-        }
+        $data['author_id'] = session('user.id');
 
         try {
             News::create($data);
@@ -84,27 +110,11 @@ class NewsController extends Controller
             abort(404, $exception->getMessage());
         }
 
-        return redirect()->route('new.list');
+        return redirect()->route('news.auth-list', ['id' => session('user')['id']]);
+
     }
 
-    public function edit(Request $request)
-    {
-        $new = News::query()
-            ->where('id', $request->id)
-            ->firstOrFail();
-
-        $editorRole = Role::query()
-        ->where('name', 'editor')
-        ->firstOrFail();
-
-        $authors = User::query()
-            ->where('role_id', $editorRole->id)
-            ->get();
-
-        return view('admin.news.create-update', compact('new', 'authors'));
-    }
-
-    public function update(Request $request)
+    public function newsUpdate(Request $request)
     {
         $new = News::query()
             ->where('id', $request->id)
@@ -141,10 +151,7 @@ class NewsController extends Controller
 
         $newsFind = $newsQuery->first();
 
-        if(is_null($request->author_id))
-        {
-            $data['author_id'] = session('user.id');
-        }
+        $data['author_id'] = session('user.id');
 
         try {
             $newsQuery->update($data);
@@ -161,28 +168,6 @@ class NewsController extends Controller
             abort(404, $exception->getMessage());
         }
 
-        return redirect()->route('new.list');
-    }
-
-    public function delete(Request $request)
-    {
-        $news = News::query()
-            ->where('id', $request->id)
-            ->firstOrFail();
-
-        if (!is_null($news->image))
-        {
-            if (file_exists(public_path($news->image)))
-            {
-                \File::delete(public_path($news->image));
-            }
-        }
-
-        $news->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Success'
-        ])->setStatusCode(200);
+        return redirect()->route('news.auth-list', ['id' => session('user')['id']]);
     }
 }

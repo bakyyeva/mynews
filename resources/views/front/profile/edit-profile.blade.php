@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.front')
 
 @section('title')
     Edit Profile
@@ -10,12 +10,13 @@
 @section('content')
     <x-bootstrap.card>
         <x-slot:header>
-            Edit Profile
+            <div class="mt-5">
+                Edit Profile
+            </div>
         </x-slot:header>
-        <x-errors.display-error />
         <x-slot:body>
             <x-errors.display-error />
-            <form action="{{ route('profile.edit', ['id' => $user->id]) }}" method="POST">
+            <form action="{{ route('front.profile.edit', ['id' => $user->id]) }}" method="POST">
                 @csrf
                 <h5 class="mb-0 mt-4">Your Information</h5>
                 <hr>

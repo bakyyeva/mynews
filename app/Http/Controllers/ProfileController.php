@@ -6,12 +6,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
     public function profile(Request $request, int $id)
     {
         $user = User::query()
+            ->with('role')
             ->where('id', $id)
             ->firstOrFail();
         return view('admin.profile.profile', compact('user'));
@@ -30,6 +32,11 @@ class ProfileController extends Controller
         $user = User::query()
             ->where('id', $id)
             ->firstOrFail();
+
+        $request->validate([
+            'username' => ['required', Rule::unique('users')->ignore($user->id)],
+        ]);
+
         $data = $request->except('_token');
         $user->update($data);
 

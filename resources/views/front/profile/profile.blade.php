@@ -1,15 +1,15 @@
 
-@extends('layouts.admin')
+@extends('layouts.front')
 
 @section('title')
-    Profil
+    Profile
 @endsection
 
 @section('css')
 @endsection
 
 @section('content')
-    <div class="card">
+    <div class="card my-5">
         <div class="card-body">
             <div class="mt-5 d-flex align-items-start justify-content-between">
                 <div class="">
@@ -17,7 +17,7 @@
                     <p class="mb-1">{{ $user->role->name }}</p>
                 </div>
                 <div class="">
-                    <a href="{{ route('profile.edit', ['id' => $user->id ])}}" class="btn btn-primary">
+                    <a href="{{ route('front.profile.edit', ['id' => $user->id ])}}" class="btn btn-primary">
                         Edit Profile
                     </a>
                 </div>

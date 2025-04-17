@@ -13,14 +13,14 @@ class AuthController extends Controller
     public function show()
     {
         if (Auth::check()) {
-            return redirect()->route('admin.home');
+            return redirect()->route('front.index');
         }
         return view("auth.login");
     }
     public function login(Request $request)
     {
         $request->validate([
-            'username' => ['required', 'unique:users,id'],
+            'username' => ['required'],
             'password' => ['required']
         ]);
 
@@ -34,7 +34,10 @@ class AuthController extends Controller
 
             session()->put('user', $user);
 
-            return redirect()->route('admin.home');
+            if ($user->hasRole('admin')) {
+                return redirect()->route('admin.home');
+            }
+            return redirect()->route('front.index');
         }
         return back()->withErrors([
             'user' => 'Username or password is incorrect',
@@ -48,28 +51,25 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'username' => ['required', 'unique:users,id'],
+            'username' => ['required', 'unique:users,username'],
             'password' => ['required', 'confirmed']
         ]);
 
+        $editorRole = Role::query()
+            ->where('name', 'editor')
+            ->firstOrFail();
+
         $data = $request->except(['_token']);
         $data['password'] = bcrypt($data['password']);
-        $data['role'] = 'editor';
+        $data['role_id'] = $editorRole->id;
 
         try {
             $user = User::create($data);
-
             session()->put('user', $user);
-
-            $editorRole = Role::query()
-                ->where('name', 'editor')
-                ->firstOrFail();
-
             $user->assignRole($editorRole);
-
             Auth::login($user);
 
-            return redirect()->route('admin.home')->with('success', 'User created successfully!');
+            return redirect()->route('front.index')->with('success', 'User created successfully!');
 
         } catch (\Exception $exception) {
             abort(404, $exception->getMessage());

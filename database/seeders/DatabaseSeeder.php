@@ -16,14 +16,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'username' => 'admin',
-            'password' => bcrypt('admin'),
-            'role' => 'admin',
-        ]);
-
         Artisan::call('key:generate');
         Artisan::call('storage:link');
 
@@ -32,11 +24,23 @@ class DatabaseSeeder extends Seeder
             PermissionsSeeder::class,
         ]);
 
+        $roleAdmin = Role::query()
+            ->where('name', 'admin')
+            ->firstOrFail();
+
+        $admin = User::factory()->create([
+            'username' => 'admin',
+            'password' => bcrypt('admin'),
+            'role_id' => $roleAdmin->id,
+        ]);
+
+        $admin->syncRoles($roleAdmin);
+
         User::factory(3)->create();
         News::factory(12)->create();
 
         $users = User::query()
-            ->whereNot('role', 'admin')
+            ->whereNot('role_id', $roleAdmin->id)
             ->get();
 
         $editorRole = Role::query()

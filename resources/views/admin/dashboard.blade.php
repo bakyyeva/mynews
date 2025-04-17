@@ -22,11 +22,11 @@
             <div class="row justify-content-evenly align-items-center mt-4">
                 <div class="col-md-2 col-sm-12">
                     <h6 class="text-secondary font-weight-bold">Best News</h6>
-                    <div class="fs-6">xxx</div>
+                    <div class="fs-6">....</div>
                 </div>
                 <div class="col-md-2 col-sm-12">
                     <h6 class="text-secondary font-weight-bold">Best Writers</h6>
-                    <div class="fs-6">yyy</div>
+                    <div class="fs-6">....</div>
                 </div>
             </div>
         </div>

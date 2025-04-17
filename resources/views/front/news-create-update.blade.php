@@ -1,7 +1,7 @@
-@extends('layouts.admin')
+@extends('layouts.front')
 
 @section('title')
-    New {{ isset($new) ? 'Update' : 'Add' }}
+    News {{ isset($new) ? 'Update' : 'Add' }}
 @endsection
 
 @section('css')
@@ -10,11 +10,13 @@
 @section('content')
     <x-bootstrap.card>
         <x-slot:header>
-             New {{ isset($new) ? 'Update' : 'Add' }}
+            <div class="mt-5">
+                News {{ isset($new) ? 'Update' : 'Add' }}
+            </div>
         </x-slot:header>
         <x-slot:body>
             <x-errors.display-error />
-            <form action="{{ isset($new) ? route('new.edit', ['id' => $new->id]) : route('new.create') }}"
+            <form action="{{ isset($new) ? route('front.news-edit', ['id' => $new->id]) : route('front.new-create') }}"
                   method="POST"
                   enctype="multipart/form-data"
                   id="newForm">
@@ -43,25 +45,6 @@
                             <img src="{{ asset($new->image) }}" class="img-fluid mt-3" style="max-height: 200px">
                        @endif
                     </div>
-                    @if(auth()->user()->hasRole('admin'))
-                        <div class="col-md-6 col-sm-12">
-                            <label for="author_id" class="form-label">Authors</label>
-                                    <select
-                                        class="form-select form-control form-control-solid-bordered m-b-sm"
-                                        aria-label="Authors"
-                                        name="author_id"
-                                        id="author_id"
-                                        required
-                                    >
-                                        <option value="{{ null }}">Choice Author</option>
-                                        @foreach($authors as $author)
-                                            <option value="{{ $author->id }}" {{ isset($new) && $new->author->id == $author->id ? 'selected' : ""}}>
-                                                {{ $author->username }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                        </div>
-                    @endif
                     <div class="col-md-12 col-sm-12">
                         <button type="submit" class="mt-2 btn btn-success btn-rounded w-100" id="btnSave">
                             {{ isset($new) ? 'Update' : 'Add' }}
